@@ -7,7 +7,7 @@ from torchmetrics import Accuracy
 
 
 OPTIMIZER = "Adam"
-LR = 1e-3
+LR = 3e-4
 LOSS = "cross_entropy"
 ONE_CYCLE_TOTAL_STEPS = 100
 

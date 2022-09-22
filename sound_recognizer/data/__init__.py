@@ -7,3 +7,4 @@ of the metadata module that is parallel to this one in the
 hierarchy.
 """
 from .base_data_module import BaseDataModule
+from .esc50 import ESC50

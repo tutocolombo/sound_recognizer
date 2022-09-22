@@ -3,7 +3,7 @@ import sound_recognizer.metadata.shared as shared
 
 DOWNLOADED_DATA_DIRNAME = shared.DOWNLOADED_DATA_DIRNAME
 
-DIMS = (1, 28, 28)
+DIMS = 1
 OUTPUT_DIMS = (1,)
 MAPPING = list(range(50))
 

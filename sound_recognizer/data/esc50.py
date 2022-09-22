@@ -1,5 +1,5 @@
 import torch
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, Subset
 from torchvision.datasets.utils import check_integrity, download_and_extract_archive
 from typing import Callable, Optional
 import sound_recognizer.metadata.esc50 as metadata
@@ -48,9 +48,9 @@ class ESC50DS(Dataset):
             self.class_to_idx[category] = i
 
     def _load_data(self):
+        data = []
+        targets = []
         for _, row in self.df.iterrows():
-            data = []
-            targets = []
 
             file_path = os.path.join(self.root, metadata.BASE_FOLDER, metadata.AUDIO_DIR, row[metadata.FILE_COL])
             wav, sr = torchaudio.load(file_path)
@@ -59,7 +59,7 @@ class ESC50DS(Dataset):
             data.append(wav)
             targets.append(self.class_to_idx[row[metadata.LABEL_COL]])
 
-            return data, targets
+        return data, targets
 
     def __getitem__(self, index):
         """
@@ -87,13 +87,16 @@ class ESC50DS(Dataset):
 
     def download(self):
         if self._check_integrity():
-            print('Files already downloaded and verified')
+            # print('Files already downloaded and verified')
             return
 
         download_and_extract_archive(url=metadata.URL,
                                      download_root=self.root,
                                      filename=metadata.ZIP_FILENAME,
                                      md5=metadata.ZIP_MD5)
+        
+    def index_split_by_fold(self, fold=4):
+        return self.df.index[self.df['fold']!=fold], self.df.index[self.df['fold']==fold]
 
 
 class ESC50(BaseDataModule):
@@ -108,20 +111,20 @@ class ESC50(BaseDataModule):
         self.mapping = metadata.MAPPING
 
     def prepare_data(self, *args, **kwargs) -> None:
-        """Download train and test MNIST data from PyTorch canonical source."""
-        ESC50DS(self.data_dir, train=True, download=True)
-        ESC50DS(self.data_dir, train=False, download=True)
+        ESC50DS(self.data_dir, download=True)
 
     def setup(self, stage=None) -> None:
         """Split into train, val, test, and set dims."""
         train_full = ESC50DS(self.data_dir, train=True, transform=self.transform)
-        self.data_train, self.data_val = random_split(train_full, [metadata.TRAIN_SIZE, metadata.VAL_SIZE])  # type: ignore
+        train_indexes, valid_indexes = train_full.index_split_by_fold()
+        self.data_train = Subset(train_full, train_indexes)  # type: ignore
+        self.data_val = Subset(train_full, valid_indexes)  # type: ignore
         self.data_test = ESC50DS(self.data_dir, train=False, transform=self.transform)
 
 
 class AudioToMelSpecDb:
     def __init__(self):
-        self.mel_spectrogram_transform = torchaudio.transforms.MelSpectrogram()
+        self.mel_spectrogram_transform = torchaudio.transforms.MelSpectrogram(sample_rate=44100, n_fft=2048, hop_length=512, n_mels=128, f_min=20, f_max=8300)
         self.mel_spectrogram_db_transform = torchaudio.transforms.AmplitudeToDB()
 
     def __call__(self, audio):
