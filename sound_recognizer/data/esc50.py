@@ -96,7 +96,8 @@ class ESC50DS(Dataset):
                                      md5=metadata.ZIP_MD5)
         
     def index_split_by_fold(self, fold=4):
-        return self.df.index[self.df['fold']!=fold], self.df.index[self.df['fold']==fold]
+        return Subset(self, self.df.index[self.df['fold'] != fold]), \
+               Subset(self, self.df.index[self.df['fold'] == fold])
 
 
 class ESC50(BaseDataModule):
@@ -116,15 +117,18 @@ class ESC50(BaseDataModule):
     def setup(self, stage=None) -> None:
         """Split into train, val, test, and set dims."""
         train_full = ESC50DS(self.data_dir, train=True, transform=self.transform)
-        train_indexes, valid_indexes = train_full.index_split_by_fold()
-        self.data_train = Subset(train_full, train_indexes)  # type: ignore
-        self.data_val = Subset(train_full, valid_indexes)  # type: ignore
+        self.data_train, self.data_val = train_full.split_by_fold()  # type: ignore
         self.data_test = ESC50DS(self.data_dir, train=False, transform=self.transform)
 
 
 class AudioToMelSpecDb:
     def __init__(self):
-        self.mel_spectrogram_transform = torchaudio.transforms.MelSpectrogram(sample_rate=44100, n_fft=2048, hop_length=512, n_mels=128, f_min=20, f_max=8300)
+        self.mel_spectrogram_transform = torchaudio.transforms.MelSpectrogram(sample_rate=44100,
+                                                                              n_fft=2048,
+                                                                              hop_length=512,
+                                                                              n_mels=128,
+                                                                              f_min=20,
+                                                                              f_max=8300)
         self.mel_spectrogram_db_transform = torchaudio.transforms.AmplitudeToDB()
 
     def __call__(self, audio):

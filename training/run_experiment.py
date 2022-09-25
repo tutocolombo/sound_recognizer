@@ -7,6 +7,8 @@ import pytorch_lightning as pl
 from pytorch_lightning.utilities.rank_zero import rank_zero_info, rank_zero_only
 import torch
 
+from sound_recognizer import callbacks as cb
+
 from sound_recognizer import lit_models
 from training.util import DATA_CLASS_MODULE, import_class, MODEL_CLASS_MODULE, setup_data_and_model_from_args
 
@@ -27,6 +29,12 @@ def _setup_parser():
     parser.set_defaults(max_epochs=1)
 
     # Basic arguments
+    parser.add_argument(
+        "--wandb",
+        action="store_true",
+        default=False,
+        help="If passed, logs experiment results to Weights & Biases. Otherwise logs only to local Tensorboard.",
+    )
     parser.add_argument(
         "--data_class",
         type=str,
@@ -112,7 +120,7 @@ def main():
     logger = pl.loggers.TensorBoardLogger(log_dir)
     experiment_dir = logger.log_dir
 
-    goldstar_metric = "validation/cer" if args.loss in ("transformer",) else "validation/loss"
+    goldstar_metric = "validation/loss"
     filename_format = "epoch={epoch:04d}-validation.loss={validation/loss:.3f}"
     checkpoint_callback = pl.callbacks.ModelCheckpoint(
         save_top_k=5,
@@ -127,6 +135,12 @@ def main():
     summary_callback = pl.callbacks.ModelSummary(max_depth=2)
 
     callbacks = [summary_callback, checkpoint_callback]
+    if args.wandb:
+        logger = pl.loggers.WandbLogger(log_model="all", save_dir=str(log_dir), job_type="train")
+        logger.watch(model, log_freq=max(100, args.log_every_n_steps))
+        logger.log_hyperparams(vars(args))
+        experiment_dir = logger.experiment.dir
+    callbacks += [cb.ModelSizeLogger(), cb.LearningRateMonitor()]
     if args.stop_early:
         early_stopping_callback = pl.callbacks.EarlyStopping(
             monitor="validation/loss", mode="min", patience=args.stop_early
@@ -144,6 +158,8 @@ def main():
     best_model_path = checkpoint_callback.best_model_path
     if best_model_path:
         rank_zero_info(f"Best model saved at: {best_model_path}")
+        if args.wandb:
+            rank_zero_info("Best model also uploaded to W&B ")
 
 
 if __name__ == "__main__":
