@@ -1,23 +1,25 @@
+import argparse
+import os
+from typing import Callable, Optional
+
+import pandas as pd
+from sound_recognizer.data.base_data_module import BaseDataModule, load_and_print_info
+import sound_recognizer.metadata.esc50 as metadata
 import torch
 from torch.utils.data import Dataset, Subset
-from torchvision.datasets.utils import check_integrity, download_and_extract_archive
-from typing import Callable, Optional
-import sound_recognizer.metadata.esc50 as metadata
-import pandas as pd
 import torchaudio
-import os
-import argparse
-
-from sound_recognizer.data.base_data_module import BaseDataModule, load_and_print_info
+from torchvision.datasets.utils import check_integrity, download_and_extract_archive
 
 
 class ESC50DS(Dataset):
+    """ESC50 Dataset. Same function as other torchaudio datasets"""
+
     def __init__(
-            self,
-            root: str,
-            download: bool = False,
-            train: bool = True,
-            transform: Optional[Callable] = None
+        self,
+        root: str,
+        download: bool = False,
+        train: bool = True,
+        transform: Optional[Callable] = None,
     ):
         self.root = os.path.expanduser(root)
 
@@ -25,7 +27,9 @@ class ESC50DS(Dataset):
             self.download()
 
         if not self._check_integrity():
-            raise RuntimeError("Dataset not found. You can use download=True to download it")
+            raise RuntimeError(
+                "Dataset not found. You can use download=True to download it"
+            )
 
         self.train = train
         self._load_meta()
@@ -36,11 +40,13 @@ class ESC50DS(Dataset):
     def _load_meta(self):
         path = os.path.join(self.root, metadata.BASE_FOLDER, metadata.META_FILENAME)
         if not check_integrity(path, metadata.META_MD5):
-            raise RuntimeError('Dataset metadata file not found or corrupted.' +
-                               ' You can use download=True to download it')
+            raise RuntimeError(
+                "Dataset metadata file not found or corrupted."
+                + " You can use download=True to download it"
+            )
 
         data = pd.read_csv(path)
-        index = data['fold'] != 5 if self.train else data['fold'] == 5
+        index = data["fold"] != 5 if self.train else data["fold"] == 5
         self.df = data[index]
         self.class_to_idx = {}
         self.classes = sorted(self.df[metadata.LABEL_COL].unique())
@@ -52,7 +58,12 @@ class ESC50DS(Dataset):
         targets = []
         for _, row in self.df.iterrows():
 
-            file_path = os.path.join(self.root, metadata.BASE_FOLDER, metadata.AUDIO_DIR, row[metadata.FILE_COL])
+            file_path = os.path.join(
+                self.root,
+                metadata.BASE_FOLDER,
+                metadata.AUDIO_DIR,
+                row[metadata.FILE_COL],
+            )
             wav, sr = torchaudio.load(file_path)
             wav = wav if not self.transform else torch.Tensor(self.transform(wav).data)
 
@@ -63,10 +74,12 @@ class ESC50DS(Dataset):
 
     def __getitem__(self, index):
         """
-        Args:
+        Args
+        ----
             index (int): Index
 
-        Returns:
+        Returns
+        -------
             tuple: (audio, target) where target is index of the target class.
         """
         data, target = self.data[index], self.targets[index]
@@ -90,14 +103,18 @@ class ESC50DS(Dataset):
             # print('Files already downloaded and verified')
             return
 
-        download_and_extract_archive(url=metadata.URL,
-                                     download_root=self.root,
-                                     filename=metadata.ZIP_FILENAME,
-                                     md5=metadata.ZIP_MD5)
-        
-    def index_split_by_fold(self, fold=4):
-        return Subset(self, self.df.index[self.df['fold'] != fold]), \
-               Subset(self, self.df.index[self.df['fold'] == fold])
+        download_and_extract_archive(
+            url=metadata.URL,
+            download_root=self.root,
+            filename=metadata.ZIP_FILENAME,
+            md5=metadata.ZIP_MD5,
+        )
+
+    def split_by_fold(self, fold=4):
+        # fmt: off
+        return Subset(self, self.df.index[self.df["fold"] != fold]), \
+               Subset(self, self.df.index[self.df["fold"] == fold])
+        # fmt: on
 
 
 class ESC50(BaseDataModule):
@@ -122,13 +139,17 @@ class ESC50(BaseDataModule):
 
 
 class AudioToMelSpecDb:
+    """Transform to get a Mel Spectogram in dB scale from an audio tensor"""
+
     def __init__(self):
-        self.mel_spectrogram_transform = torchaudio.transforms.MelSpectrogram(sample_rate=44100,
-                                                                              n_fft=2048,
-                                                                              hop_length=512,
-                                                                              n_mels=128,
-                                                                              f_min=20,
-                                                                              f_max=8300)
+        self.mel_spectrogram_transform = torchaudio.transforms.MelSpectrogram(
+            sample_rate=44100,
+            n_fft=2048,
+            hop_length=512,
+            n_mels=128,
+            f_min=20,
+            f_max=8300,
+        )
         self.mel_spectrogram_db_transform = torchaudio.transforms.AmplitudeToDB()
 
     def __call__(self, audio):

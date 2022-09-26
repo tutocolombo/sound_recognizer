@@ -4,10 +4,9 @@ import os
 from typing import Collection, Optional, Tuple, Union
 
 import pytorch_lightning as pl
+import sound_recognizer.metadata.shared as metadata
 import torch
 from torch.utils.data import ConcatDataset, DataLoader, Dataset
-
-import sound_recognizer.metadata.shared as metadata
 
 
 def load_and_print_info(data_module_class) -> None:
@@ -28,7 +27,9 @@ NUM_AVAIL_GPUS = torch.cuda.device_count()
 DEFAULT_NUM_WORKERS = NUM_AVAIL_CPUS
 # but in distributed data parallel mode, we launch a training on each GPU,
 # so must divide out to keep total at one worker per CPU
-DEFAULT_NUM_WORKERS = NUM_AVAIL_CPUS // NUM_AVAIL_GPUS if NUM_AVAIL_GPUS else DEFAULT_NUM_WORKERS
+DEFAULT_NUM_WORKERS = (
+    NUM_AVAIL_CPUS // NUM_AVAIL_GPUS if NUM_AVAIL_GPUS else DEFAULT_NUM_WORKERS
+)
 
 
 class BaseDataModule(pl.LightningDataModule):
@@ -75,7 +76,11 @@ class BaseDataModule(pl.LightningDataModule):
 
     def config(self):
         """Return important settings of the dataset, which will be passed to instantiate models."""
-        return {"input_dims": self.input_dims, "output_dims": self.output_dims, "mapping": self.mapping}
+        return {
+            "input_dims": self.input_dims,
+            "output_dims": self.output_dims,
+            "mapping": self.mapping,
+        }
 
     def prepare_data(self, *args, **kwargs) -> None:
         """Take the first steps to prepare data for use.

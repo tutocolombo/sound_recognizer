@@ -36,7 +36,9 @@ class BaseLitModel(pl.LightningModule):
             self.loss_fn = getattr(torch.nn.functional, loss)
 
         self.one_cycle_max_lr = self.args.get("one_cycle_max_lr", None)
-        self.one_cycle_total_steps = self.args.get("one_cycle_total_steps", ONE_CYCLE_TOTAL_STEPS)
+        self.one_cycle_total_steps = self.args.get(
+            "one_cycle_total_steps", ONE_CYCLE_TOTAL_STEPS
+        )
 
         self.train_acc = Accuracy()
         self.val_acc = Accuracy()
@@ -44,11 +46,23 @@ class BaseLitModel(pl.LightningModule):
 
     @staticmethod
     def add_to_argparse(parser):
-        parser.add_argument("--optimizer", type=str, default=OPTIMIZER, help="optimizer class from torch.optim")
+        parser.add_argument(
+            "--optimizer",
+            type=str,
+            default=OPTIMIZER,
+            help="optimizer class from torch.optim",
+        )
         parser.add_argument("--lr", type=float, default=LR)
         parser.add_argument("--one_cycle_max_lr", type=float, default=None)
-        parser.add_argument("--one_cycle_total_steps", type=int, default=ONE_CYCLE_TOTAL_STEPS)
-        parser.add_argument("--loss", type=str, default=LOSS, help="loss function from torch.nn.functional")
+        parser.add_argument(
+            "--one_cycle_total_steps", type=int, default=ONE_CYCLE_TOTAL_STEPS
+        )
+        parser.add_argument(
+            "--loss",
+            type=str,
+            default=LOSS,
+            help="loss function from torch.nn.functional",
+        )
         return parser
 
     def configure_optimizers(self):
@@ -56,9 +70,15 @@ class BaseLitModel(pl.LightningModule):
         if self.one_cycle_max_lr is None:
             return optimizer
         scheduler = torch.optim.lr_scheduler.OneCycleLR(
-            optimizer=optimizer, max_lr=self.one_cycle_max_lr, total_steps=self.one_cycle_total_steps
+            optimizer=optimizer,
+            max_lr=self.one_cycle_max_lr,
+            total_steps=self.one_cycle_total_steps,
         )
-        return {"optimizer": optimizer, "lr_scheduler": scheduler, "monitor": "validation/loss"}
+        return {
+            "optimizer": optimizer,
+            "lr_scheduler": scheduler,
+            "monitor": "validation/loss",
+        }
 
     def forward(self, x):
         return self.model(x)
@@ -90,7 +110,9 @@ class BaseLitModel(pl.LightningModule):
         self.val_acc(logits, y)
 
         self.log("validation/loss", loss, prog_bar=True, sync_dist=True)
-        self.log("validation/acc", self.val_acc, on_step=False, on_epoch=True, prog_bar=True)
+        self.log(
+            "validation/acc", self.val_acc, on_step=False, on_epoch=True, prog_bar=True
+        )
 
         outputs = {"loss": loss}
 

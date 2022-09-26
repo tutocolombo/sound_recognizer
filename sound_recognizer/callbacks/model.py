@@ -59,13 +59,17 @@ class GraphLogger(pl.Callback):
             raise ImportError("GraphLogCallback requires torchviz." "")
 
     @rank_zero_only
-    def on_train_batch_end(self, trainer, module, outputs, batch, batch_idx, dataloader_idx):
+    def on_train_batch_end(
+        self, trainer, module, outputs, batch, batch_idx, dataloader_idx
+    ):
         if not self.graph_logged:
             try:
                 outputs = outputs[0][0]["extra"]
                 self.log_graph(trainer, module, outputs[self.output_key])
             except KeyError:
-                logging.warning(f"Unable to log graph: outputs not found at key {self.output_key}")
+                logging.warning(
+                    f"Unable to log graph: outputs not found at key {self.output_key}"
+                )
             self.graph_logged = True
 
     @staticmethod
