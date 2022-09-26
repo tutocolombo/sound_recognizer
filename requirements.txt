@@ -1,0 +1,6 @@
+pandas
+pre-commit
+pytorch-lightning
+torchaudio
+torchvision
+wandb
