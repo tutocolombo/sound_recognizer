@@ -17,7 +17,7 @@ class CustomResnet(nn.Module):
         self.args = vars(args) if args is not None else {}
         self.data_config = data_config
 
-        input_channels = self.data_config["input_dims"]
+        input_channels = self.data_config["input_dims"][0]
         num_classes = len(self.data_config["mapping"])
 
         custom_resnet = resnet18(weights=ResNet18_Weights.DEFAULT)

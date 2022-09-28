@@ -48,10 +48,12 @@ class ESC50DS(Dataset):
         data = pd.read_csv(path)
         index = data["fold"] != 5 if self.train else data["fold"] == 5
         self.df = data[index]
-        self.class_to_idx = {}
-        self.classes = sorted(self.df[metadata.LABEL_COL].unique())
-        for i, category in enumerate(self.classes):
-            self.class_to_idx[category] = i
+        self.class_labels = (
+            data.sort_values(metadata.TARGET_COL)[metadata.LABEL_COL]
+            .drop_duplicates()
+            .to_list()
+        )
+        self.class_to_idx = {v: k for k, v in enumerate(self.class_labels)}
 
     def _load_data(self):
         data = []
@@ -68,7 +70,7 @@ class ESC50DS(Dataset):
             wav = wav if not self.transform else torch.Tensor(self.transform(wav).data)
 
             data.append(wav)
-            targets.append(self.class_to_idx[row[metadata.LABEL_COL]])
+            targets.append(row[metadata.TARGET_COL])
 
         return data, targets
 
@@ -120,7 +122,7 @@ class ESC50DS(Dataset):
 class ESC50(BaseDataModule):
     """ESC50 DataModule."""
 
-    def __init__(self, args: argparse.Namespace) -> None:
+    def __init__(self, args: argparse.Namespace = None) -> None:
         super().__init__(args)
         self.data_dir = metadata.DOWNLOADED_DATA_DIRNAME
         self.transform = AudioToMelSpecDb()
@@ -133,13 +135,17 @@ class ESC50(BaseDataModule):
 
     def setup(self, stage=None) -> None:
         """Split into train, val, test, and set dims."""
-        train_full = ESC50DS(self.data_dir, train=True, transform=self.transform)
-        self.data_train, self.data_val = train_full.split_by_fold()  # type: ignore
-        self.data_test = ESC50DS(self.data_dir, train=False, transform=self.transform)
+        if stage == "train" or stage is None:
+            train_full = ESC50DS(self.data_dir, train=True, transform=self.transform)
+            self.data_train, self.data_val = train_full.split_by_fold()  # type: ignore
+        if stage == "train" or stage is None:
+            self.data_test = ESC50DS(
+                self.data_dir, train=False, transform=self.transform
+            )
 
 
 class AudioToMelSpecDb:
-    """Transform to get a Mel Spectogram in dB scale from an audio tensor"""
+    """Transform to get a Mel Spectrogram in dB scale from an audio tensor"""
 
     def __init__(self):
         self.mel_spectrogram_transform = torchaudio.transforms.MelSpectrogram(

@@ -8,3 +8,4 @@ hierarchy.
 """
 from .base_data_module import BaseDataModule
 from .esc50 import ESC50
+from .fake_images import FakeImageData
