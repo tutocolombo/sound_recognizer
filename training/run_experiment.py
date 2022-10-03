@@ -5,9 +5,10 @@ from pathlib import Path
 import numpy as np
 import pytorch_lightning as pl
 from pytorch_lightning.utilities.rank_zero import rank_zero_info, rank_zero_only
+import torch
+
 from sound_recognizer import callbacks as cb
 from sound_recognizer import lit_models
-import torch
 
 from training.util import (
     DATA_CLASS_MODULE,

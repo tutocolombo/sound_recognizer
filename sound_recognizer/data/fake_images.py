@@ -1,9 +1,10 @@
 """A fake image dataset for testing."""
 import argparse
 
-from sound_recognizer.data.base_data_module import BaseDataModule
 import torch
 import torchvision
+
+from sound_recognizer.data.base_data_module import BaseDataModule
 
 
 _NUM_SAMPLES = 512
