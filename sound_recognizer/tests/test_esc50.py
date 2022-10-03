@@ -9,11 +9,11 @@ def test_mapping():
     assert ds.class_labels == metadata.MAPPING
 
 
-def test_iam_data_splits():
+def test_esc50_data_splits():
     """Fails when any data points are shared between training, test, or validation."""
     dm = ESC50()
     dm.prepare_data()
     dm.setup()
-    assert not set(dm.data_train.data) & set(dm.data_val.data)
-    assert not set(dm.data_train.data) & set(dm.data_test.data)
-    assert not set(dm.data_val.data) & set(dm.data_test.data)
+    assert not set(dm.data_train) & set(dm.data_val)
+    assert not set(dm.data_train) & set(dm.data_test)
+    assert not set(dm.data_val) & set(dm.data_test)

@@ -4,9 +4,10 @@ import os
 from typing import Collection, Optional, Tuple, Union
 
 import pytorch_lightning as pl
-import sound_recognizer.metadata.shared as metadata
 import torch
 from torch.utils.data import ConcatDataset, DataLoader, Dataset
+
+import sound_recognizer.metadata.shared as metadata
 
 
 def load_and_print_info(data_module_class) -> None:
@@ -19,7 +20,7 @@ def load_and_print_info(data_module_class) -> None:
     print(dataset)
 
 
-BATCH_SIZE = 128
+BATCH_SIZE = 64
 NUM_AVAIL_CPUS = len(os.sched_getaffinity(0))
 NUM_AVAIL_GPUS = torch.cuda.device_count()
 

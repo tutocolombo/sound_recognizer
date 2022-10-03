@@ -3,12 +3,13 @@ import os
 from typing import Callable, Optional
 
 import pandas as pd
-from sound_recognizer.data.base_data_module import BaseDataModule, load_and_print_info
-import sound_recognizer.metadata.esc50 as metadata
 import torch
 from torch.utils.data import Dataset, Subset
 import torchaudio
 from torchvision.datasets.utils import check_integrity, download_and_extract_archive
+
+from sound_recognizer.data.base_data_module import BaseDataModule, load_and_print_info
+import sound_recognizer.metadata.esc50 as metadata
 
 
 class ESC50DS(Dataset):

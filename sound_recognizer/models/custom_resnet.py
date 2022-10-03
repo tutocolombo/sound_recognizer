@@ -30,9 +30,10 @@ class CustomResnet(nn.Module):
         )
         num_features = custom_resnet.fc.in_features
         custom_resnet.fc = nn.Linear(num_features, num_classes)
+        self.inner_model = custom_resnet
 
-        self.__dict__.update(custom_resnet.__dict__)
-        self.forward = custom_resnet.forward
+    def forward(self, x):
+        return self.inner_model(x)
 
     @staticmethod
     def add_to_argparse(parser):
