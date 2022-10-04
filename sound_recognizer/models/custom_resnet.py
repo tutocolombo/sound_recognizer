@@ -16,6 +16,7 @@ class CustomResnet(nn.Module):
         super().__init__()
         self.args = vars(args) if args is not None else {}
         self.data_config = data_config
+        self.mapping = self.data_config["mapping"]
 
         input_channels = self.data_config["input_dims"][0]
         num_classes = len(self.data_config["mapping"])

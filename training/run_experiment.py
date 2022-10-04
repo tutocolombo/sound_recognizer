@@ -36,9 +36,13 @@ def _setup_parser():
     # Basic arguments
     parser.add_argument(
         "--wandb",
-        action="store_true",
-        default=False,
-        help="If passed, logs experiment results to Weights & Biases. Otherwise logs only to local Tensorboard.",
+        type=str,
+        const="sound-recognizer",
+        default=None,
+        action="store",
+        nargs="?",
+        help="If passed, logs experiment results to Weights & Biases. Can add sting identifier for the wandb project. "
+        "Otherwise logs only to local Tensorboard.",
     )
     parser.add_argument(
         "--data_class",
@@ -147,7 +151,7 @@ def main():
     callbacks = [summary_callback, checkpoint_callback]
     if args.wandb:
         logger = pl.loggers.WandbLogger(
-            log_model="all", save_dir=str(log_dir), job_type="train"
+            project=args.wandb, log_model="all", save_dir=str(log_dir), job_type="train"
         )
         logger.watch(model, log_freq=max(100, args.log_every_n_steps))
         logger.log_hyperparams(vars(args))

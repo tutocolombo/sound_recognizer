@@ -136,10 +136,10 @@ class ESC50(BaseDataModule):
 
     def setup(self, stage=None) -> None:
         """Split into train, val, test, and set dims."""
-        if stage == "train" or stage is None:
+        if stage == "fit" or stage is None:
             train_full = ESC50DS(self.data_dir, train=True, transform=self.transform)
             self.data_train, self.data_val = train_full.split_by_fold()  # type: ignore
-        if stage == "train" or stage is None:
+        if stage == "test" or stage is None:
             self.data_test = ESC50DS(
                 self.data_dir, train=False, transform=self.transform
             )
