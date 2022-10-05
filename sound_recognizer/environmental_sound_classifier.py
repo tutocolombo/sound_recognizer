@@ -9,9 +9,9 @@ from pathlib import Path
 from typing import Union
 
 import torch
-import torchaudio
 
 from sound_recognizer.data.esc50 import AudioToMelSpecDb
+import sound_recognizer.util as util
 
 
 STAGED_MODEL_DIRNAME = (
@@ -31,14 +31,14 @@ class EnvironmentalSoundClassifier:
         self.transform = AudioToMelSpecDb()
 
     @torch.no_grad()
-    def predict(self, audio: Union[str, Path]) -> str:
-        """Predict/infer sounds in input audio file (which can be a file path or url)."""
-        wav, _ = torchaudio.load(audio)
-        image_tensor = torch.Tensor(self.transform(wav).data)
-        if len(image_tensor) > 1:
-            # If the image has more that 1 channel, we average the channels but keep the shape
-            image_tensor = torch.mean(image_tensor, 0).unsqueeze(0)
-        image_tensor = image_tensor.unsqueeze(0)
+    def predict(self, audio_file: Union[str, Path, bytes]) -> str:
+        """Predict/infer sounds in input audio file (which can be a file path or url, or the file bytes)."""
+        audio = util.read_audio_file(audio_file)
+        audio_tensor = torch.Tensor(audio.samples) / (1 << 31)  # Normalized tensor
+        image_tensor = torch.Tensor(
+            self.transform(audio_tensor).data
+        )  # Spectrogram tensor
+        image_tensor = image_tensor.unsqueeze(0).unsqueeze(0)  # [ B, C, H, W ]
         logits = self.model(image_tensor)
         y_pred = torch.argmax(logits, dim=1)
         return self.mapping[y_pred[0]]
@@ -53,8 +53,8 @@ def main():
     )
     args = parser.parse_args()
 
-    text_recognizer = EnvironmentalSoundClassifier()
-    pred_str = text_recognizer.predict(args.filename)
+    sound_recognizer = EnvironmentalSoundClassifier()
+    pred_str = sound_recognizer.predict(args.filename)
     print(pred_str)
 
 
