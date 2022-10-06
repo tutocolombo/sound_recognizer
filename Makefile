@@ -23,3 +23,10 @@ pip-tools-lint:
 pip-tools-upgrade:
 	pip install pip-tools==6.9.0 setuptools==63.1.0
 	pip-compile --upgrade requirements/prod.in && pip-compile --upgrade requirements/dev.in && pip-compile --upgrade requirements/dev-lint.in
+
+# Build Docker images
+build-api-docker-image:
+    docker build -t api_serverless -f api_serverless/Dockerfile .
+
+build-app-docker-image:
+    docker build -t app_gradio -f app_gradio/Dockerfile .

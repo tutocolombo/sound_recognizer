@@ -3,7 +3,7 @@ channels:
   - defaults
   - conda-forge
 dependencies:
-  - python=3.9  # versioned to match Paperspace Gradient  # version also pinned in Dockerfile
+  - python=3.8  # versioned  # version also pinned in Dockerfile
   - cudatoolkit=11.2.1
   - cudnn=8.1.1
   - pip=22.2.2  # versioned to match Paperspace Gradient  # version also pinned in Dockerfile

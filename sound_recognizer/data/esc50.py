@@ -10,6 +10,7 @@ from torchvision.datasets.utils import check_integrity, download_and_extract_arc
 
 from sound_recognizer.data.base_data_module import BaseDataModule, load_and_print_info
 import sound_recognizer.metadata.esc50 as metadata
+from sound_recognizer.transforms.audio import AudioToMelSpecDb
 
 
 class ESC50DS(Dataset):
@@ -143,26 +144,6 @@ class ESC50(BaseDataModule):
             self.data_test = ESC50DS(
                 self.data_dir, train=False, transform=self.transform
             )
-
-
-class AudioToMelSpecDb:
-    """Transform to get a Mel Spectrogram in dB scale from an audio tensor"""
-
-    def __init__(self):
-        self.mel_spectrogram_transform = torchaudio.transforms.MelSpectrogram(
-            sample_rate=44100,
-            n_fft=2048,
-            hop_length=512,
-            n_mels=128,
-            f_min=20,
-            f_max=8300,
-        )
-        self.mel_spectrogram_db_transform = torchaudio.transforms.AmplitudeToDB()
-
-    def __call__(self, audio):
-        mel_spectrogram = self.mel_spectrogram_transform(audio)
-        mel_spec_db = self.mel_spectrogram_db_transform(mel_spectrogram)
-        return mel_spec_db
 
 
 if __name__ == "__main__":

@@ -10,7 +10,7 @@ from typing import Union
 
 import torch
 
-from sound_recognizer.data.esc50 import AudioToMelSpecDb
+from sound_recognizer.transforms.audio import AudioToMelSpecDb
 import sound_recognizer.util as util
 
 
