@@ -99,17 +99,18 @@ class PredictorBackend:
         return pred
 
     def _predict_with_metrics(self, audio_file):
-        pred = self._predict(audio_file)
-
-        file_info = miniaudio.get_file_info(audio_file)
-        metrics = {
-            "n_channels": file_info.nchannels,
-            "sample_rate": file_info.sample_rate,
-            "num_frames": file_info.num_frames,
-            "duration": file_info.duration,
-            "file_format": file_info.file_format,
-        }
-
+        try:
+            file_info = miniaudio.get_file_info(audio_file)
+            pred = self._predict(audio_file)
+            metrics = {
+                "n_channels": file_info.nchannels,
+                "sample_rate": file_info.sample_rate,
+                "num_frames": file_info.num_frames,
+                "duration": file_info.duration,
+                "file_format": file_info.file_format,
+            }
+        except miniaudio.DecodeError as e:
+            pred, metrics = str(e), {"error": repr(e)}
         return pred, metrics
 
     def _predict_from_endpoint(self, audio):
