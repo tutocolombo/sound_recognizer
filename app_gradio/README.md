@@ -19,7 +19,7 @@ Trained to recognize different environmental sounds:
 
 
 For more on how this application works,
-[check out the GitHub repo](https://github.com/).
+[check out the GitHub repo](https://github.com/tutocolombo/sound_recognizer).
 
 <!-- logging content below -->
 ### Flagging
@@ -27,6 +27,4 @@ For more on how this application works,
 If the model outputs in the top-right are wrong in some way,
 let us know by clicking the "flagging" buttons underneath.
 
-We'll analyze the results with
-[Gantry](https://gantry.io/blog/introducing-gantry/)
-and use them to improve the model!
+We'll analyze the results and use them to improve the model!

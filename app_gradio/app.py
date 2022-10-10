@@ -10,6 +10,7 @@ import gradio as gr
 import miniaudio
 import requests
 
+from app_gradio.flagging import SoundClassificationS3Logger
 from sound_recognizer.environmental_sound_classifier import EnvironmentalSoundClassifier
 import sound_recognizer.util as util
 
@@ -29,17 +30,20 @@ DEFAULT_PORT = 11700
 def main(args):
     predictor = PredictorBackend(url=args.model_url)
     frontend = make_frontend(
-        predictor.run,
+        fn=predictor.run,
+        flagging=args.flagging,
     )
     frontend.launch(
         server_name="0.0.0.0",  # make server accessible, binding all interfaces  # noqa: S104
         server_port=args.port,  # set a port to bind to, failing if unavailable
         favicon_path=FAVICON,  # what icon should we display in the address bar?
+        share=args.share,
     )
 
 
 def make_frontend(
     fn: Callable[[str], str],
+    flagging: bool = False,
 ):
     """Creates a gradio.Interface frontend for an audio classification function."""
     examples_dir = Path("sound_recognizer") / "tests" / "support" / "sounds"
@@ -52,7 +56,13 @@ def make_frontend(
 
     examples = [[str(path)] for path in example_paths]
 
-    allow_flagging = "never"
+    if flagging:
+        allow_flagging = "manual"
+        # callback for logging input audio, output text, and feedback to s3
+        flagging_callback = SoundClassificationS3Logger()
+    else:
+        allow_flagging = "never"
+        flagging_callback = None
 
     readme = _load_readme(with_logging=allow_flagging == "manual")
 
@@ -71,6 +81,12 @@ def make_frontend(
         examples=examples,  # which potential inputs should we provide?
         cache_examples=False,  # should we cache those inputs for faster inference? slows down start
         allow_flagging=allow_flagging,  # should we show users the option to "flag" outputs?
+        flagging_options=[
+            "incorrect",
+            "other",
+        ],  # what options do users have for feedback?
+        flagging_callback=flagging_callback,
+        flagging_dir="sound-recognizer-flagged-samples",
     )
 
     return frontend
@@ -96,7 +112,7 @@ class PredictorBackend:
     def run(self, path):
         pred, metrics = self._predict_with_metrics(path)
         _log_inference(pred, metrics)
-        return pred
+        return pred.capitalize().replace("_", " ")
 
     def _predict_with_metrics(self, audio_file):
         try:
@@ -160,13 +176,23 @@ def _make_parser():
         "--model_url",
         default=None,
         type=str,
-        help="Identifies a URL to which to send image data. Data is base64-encoded, converted to a utf-8 string, and then set via a POST request as JSON with the key 'audio'. Default is None, which instead sends the data to a model running locally.",
+        help="Identifies a URL to which to send image data. Data is base64-encoded, converted to a utf-8 string, and then set via a POST request as JSON with the key 'image'. Default is None, which instead sends the data to a model running locally.",
     )
     parser.add_argument(
         "--port",
         default=DEFAULT_PORT,
         type=int,
         help=f"Port on which to expose this server. Default is {DEFAULT_PORT}.",
+    )
+    parser.add_argument(
+        "--flagging",
+        action="store_true",
+        help="Pass this flag to allow users to 'flag' model behavior and provide feedback.",
+    )
+    parser.add_argument(
+        "--share",
+        action="store_true",
+        help="Pass this flag to create a temporary url with Gradio",
     )
 
     return parser

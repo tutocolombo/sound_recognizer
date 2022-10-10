@@ -53,10 +53,10 @@ def read_b64_audio_file(data_uri: str):
 
 def read_b64_string(b64_string, return_data_type=False):
     """Read a base64-encoded string"""
-    data_header, b64_data = split_and_validate_b64_string(b64_string)
+    data_type, b64_data = split_and_validate_b64_string(b64_string)
     decoded_audio = base64.b64decode(b64_data)
     if return_data_type:
-        return data_header, decoded_audio
+        return data_type, decoded_audio
     else:
         return decoded_audio
 
@@ -66,5 +66,5 @@ def split_and_validate_b64_string(b64_string: str):
     header, data = b64_string.split(",", 1)
     assert header.startswith("data:")
     assert header.endswith(";base64")
-    data_header = header.split(";")[0].split(":")[1].split("/")
-    return data_header, data
+    file_type, data_type = header.split(";")[0].split(":")[1].split("/")
+    return data_type, data

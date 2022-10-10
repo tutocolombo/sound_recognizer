@@ -5,10 +5,10 @@ numpy
 pandas
 pyngrok
 requests
+smart_open[s3]
 tqdm
 # versioned for stability
 markupsafe==2.1.1
-gantry==0.4.9
 gradio==3.0.21
 # versioned to match Paperspace Gradient up to minor
 Jinja2>3.1.1,<=3.1.2

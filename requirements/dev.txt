@@ -39,9 +39,7 @@ bleach==5.0.1
 boltons==21.0.0
     # via -r requirements/dev.in
 cachetools==4.2.4
-    # via
-    #   -c requirements/prod.txt
-    #   google-auth
+    # via google-auth
 certifi==2022.9.24
     # via
     #   -c requirements/prod.txt
@@ -353,9 +351,7 @@ pyzmq==24.0.1
     #   jupyter-client
     #   notebook
 regex==2022.3.2
-    # via
-    #   -c requirements/prod.txt
-    #   nltk
+    # via nltk
 requests==2.28.1
     # via
     #   -c requirements/prod.txt
