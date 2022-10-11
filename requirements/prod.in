@@ -1,0 +1,18 @@
+h5py
+importlib-metadata>=4.4
+miniaudio
+numpy
+pandas
+pyngrok
+requests
+smart_open[s3]
+tqdm
+# versioned for stability
+markupsafe==2.1.1
+gradio==3.0.21
+# versioned to match Paperspace Gradient up to minor
+Jinja2>3.1.1,<=3.1.2
+pillow<=9.2
+torch>=1.12,<1.13
+torchvision>=0.13
+torchaudio>=0.12
