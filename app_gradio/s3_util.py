@@ -7,6 +7,7 @@ from smart_open import open
 
 S3_URL_FORMAT = "https://{bucket}.s3.{region}.amazonaws.com/{key}"
 S3_URI_FORMAT = "s3://{bucket}/{key}"
+S3_DEFAULT_REGION = "ap-southeast-2"
 
 s3 = boto3.resource("s3")
 
@@ -60,7 +61,9 @@ def to_s3(bucket, audio_bytes, feedback=None, filetype=None):
 def _create_bucket(name):
     """Creates a bucket with the provided name."""
     session = boto3.session.Session()  # sessions hold on to credentials and config
-    current_region = session.region_name  # so we can pull the default region
+    current_region = (
+        session.region_name or S3_DEFAULT_REGION
+    )  # so we can pull the default region
     bucket_config = {"LocationConstraint": current_region}  # and apply it to the bucket
 
     bucket_response = s3.create_bucket(
