@@ -1,6 +1,6 @@
 # Environmental Sound Classifier
 
-Implements an environmental sound classifier using the following:
+Implementation of an end to end machine learning project using the following:
 
 - Code quality assurance with pre-commit hooks, GitHub Actions, and pytest
 - Model implementation in PyTorch
