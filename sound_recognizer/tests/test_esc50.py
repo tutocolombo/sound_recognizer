@@ -1,4 +1,4 @@
-"""Test for data.iam module."""
+"""Test for data module."""
 from sound_recognizer.data.esc50 import ESC50, ESC50DS
 import sound_recognizer.metadata.esc50 as metadata
 

@@ -26,7 +26,13 @@ def test_local_run():
 
     local_api = f"{local_url}api/predict"
     headers = {"Content-Type": "application/json"}
-    payload = json.dumps({"data": util.get_b64_encoded_data_uri(TEST_SOUND)})
+    payload = json.dumps(
+        {
+            "data": [
+                {"name": "sample", "data": util.get_b64_encoded_data_uri(TEST_SOUND)}
+            ]
+        }
+    )
     post_response = requests.post(local_api, data=payload, headers=headers)
     assert "error" not in post_response.json()
     assert "data" in post_response.json()

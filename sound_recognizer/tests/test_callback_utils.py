@@ -1,4 +1,4 @@
-"""Tests for the text_recognizer.callbacks.util module."""
+"""Tests for the callbacks.util module."""
 import random
 import string
 import tempfile

@@ -43,7 +43,7 @@ class ConvBlock(nn.Module):
 
 
 class CNN(nn.Module):
-    """Simple CNN for recognizing characters in a square image."""
+    """Simple CNN"""
 
     def __init__(
         self, data_config: Dict[str, Any], args: argparse.Namespace = None

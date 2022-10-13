@@ -1,4 +1,4 @@
-"""AWS Lambda function serving text_recognizer predictions."""
+"""AWS Lambda function serving sound_recognizer predictions."""
 import json
 
 from sound_recognizer.environmental_sound_classifier import EnvironmentalSoundClassifier

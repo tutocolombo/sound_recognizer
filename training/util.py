@@ -7,7 +7,7 @@ MODEL_CLASS_MODULE = "sound_recognizer.models"
 
 
 def import_class(module_and_class_name: str) -> type:
-    """Import class from a module, e.g. 'text_recognizer.models.MLP'."""
+    """Import class from a module"""
     module_name, class_name = module_and_class_name.rsplit(".", 1)
     module = importlib.import_module(module_name)
     class_ = getattr(module, class_name)

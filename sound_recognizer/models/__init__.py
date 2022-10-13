@@ -1,4 +1,3 @@
-"""Models for character and text recognition in images."""
-from .mlp import MLP
+"""Models"""
 from .custom_resnet import CustomResnet
 from .cnn import CNN
